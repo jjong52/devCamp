@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { v1 as uuid } from 'uuid';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { Board, BoardStatus } from './board.model';
@@ -23,7 +23,11 @@ export class BoardsService {
         return board;
     }
     getBoardById(id: string): Board {
-        return this.boards.find((board) => board.id == id); // find는 배열의 내장함수, 콜백함수를 매개변수로 받음
+        const found = this.boards.find((board) => board.id == id); // find는 배열의 내장함수, 콜백함수를 매개변수로 받음
+        if(!found) { // js에서 !는 falsy한지 판별하는것이다. falsy한 값은 false, 0, '', null, undefined, NaN 등이 있다.
+            throw new NotFoundException(`Can't find board with id ${id}`);
+        }
+        return found;
     }
 
     deleteBoard(id: string): void {
