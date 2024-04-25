@@ -1,43 +1,51 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { v1 as uuid } from 'uuid';
 import { CreateBoardDto } from './dto/create-board.dto';
-import { Board, BoardStatus } from './board.model';
+import { BoardStatus } from './board-status.enum';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Board } from './board.entity';
+import { Repository } from 'typeorm';
+import { BoardRepository } from './board.repository';
 
 @Injectable()
 export class BoardsService {
-    private boards: Board[] = [];
+    constructor(
+        @InjectRepository(BoardRepository)
+        private boardRepository: BoardRepository,
+    ) {}
 
-    getAllBoards(): Board[] {
-        return this.boards;
-    }
+    
+    // private boards: Board[] = [];
+    // getAllBoards(): Board[] {
+    //     return this.boards;
+    // }
+    // createBoard(createBoardDto: CreateBoardDto) {
+    //     const { title, description } = createBoardDto;
+    //     const board: Board = {
+    //         id: uuid(),
+    //         title, // 매개변수명과 필드명이 같을 땐 title: title을 그냥 title로 줄일 수 있다.
+    //         description,
+    //         status: BoardStatus.PUBLIC,
+    //     }
+    //     this.boards.push(board);
+    //     return board;
+    // }
 
-    createBoard(createBoardDto: CreateBoardDto) {
-        const { title, description } = createBoardDto;
-        const board: Board = {
-            id: uuid(),
-            title, // 매개변수명과 필드명이 같을 땐 title: title을 그냥 title로 줄일 수 있다.
-            description,
-            status: BoardStatus.PUBLIC,
-        }
-        this.boards.push(board);
-        return board;
-    }
-    getBoardById(id: string): Board {
-        const found = this.boards.find((board) => board.id == id); // find는 배열의 내장함수, 콜백함수를 매개변수로 받음
-        if(!found) { // js에서 !는 falsy한지 판별하는것이다. falsy한 값은 false, 0, '', null, undefined, NaN 등이 있다.
-            throw new NotFoundException(`Can't find board with id ${id}`);
+    // async await을 이용해 데이터베이스 작업이 끝난 후 결과값을 받게 한다.
+    async getBoardById(id: number): Promise <Board> {
+        const found = await this.boardRepository.findOne(id);
+        if(!found) {
+            throw new NotFoundException(`Can't find Board with id ${id}`)
         }
         return found;
     }
-
-    deleteBoard(id: string): void {
-        this.boards = this.boards.filter((board) => board.id !== id); 
-        // array.filter(콜백함수) 콜백함수로 걸러낸 새로운 배열 생성 (java의 stream().filter().toArray()기능)
-    }
-
-    updateBoardStatus(id: string, status: BoardStatus): Board {
-        const board = this.getBoardById(id);
-        board.status = status;
-        return board;
-    }
+    // deleteBoard(id: string): void {
+    //     this.boards = this.boards.filter((board) => board.id !== id); 
+    //     // array.filter(콜백함수) 콜백함수로 걸러낸 새로운 배열 생성 (java의 stream().filter().toArray()기능)
+    // }
+    // updateBoardStatus(id: string, status: BoardStatus): Board {
+    //     const board = this.getBoardById(id);
+    //     board.status = status;
+    //     return board;
+    // }
 }
