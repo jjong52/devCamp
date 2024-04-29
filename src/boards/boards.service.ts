@@ -4,17 +4,15 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { BoardStatus } from './board-status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from './board.entity';
-import { Repository } from 'typeorm';
 import { BoardRepository } from './board.repository';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BoardsService {
     constructor(
-        @InjectRepository(BoardRepository)
-        private boardRepository: BoardRepository,
-    ) {}
-
-    
+        @InjectRepository(Board)
+        private boardRepository: Repository<Board>,
+    ){}
     // private boards: Board[] = [];
     // getAllBoards(): Board[] {
     //     return this.boards;
@@ -31,6 +29,19 @@ export class BoardsService {
     //     return board;
     // }
 
+    async createBoard(createBoardDto: CreateBoardDto) : Promise<Board> {
+        const title = createBoardDto.title;
+        const description = createBoardDto.description;
+
+        const board = this.boardRepository.create({
+            title,
+            description,
+            status : BoardStatus.PUBLIC
+        });
+        await this.boardRepository.save(board);
+        return board;
+    }
+ 
     // async await을 이용해 데이터베이스 작업이 끝난 후 결과값을 받게 한다.
     async getBoardById(id: number): Promise <Board> {
         const found = await this.boardRepository.findOne(id);

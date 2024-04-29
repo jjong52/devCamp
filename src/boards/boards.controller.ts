@@ -21,6 +21,13 @@ export class BoardsController {
     // ): Board {
     //     return this.boardService.createBoard(createBoardDto);
     // }
+    @Post()
+    @UsePipes(ValidationPipe) // 내장 파이프 CreateBoardDto에서 @IsNotEmpty() 유효성 검사
+    //Cannot read properties of undefined~ 에러가 뜨면 꼭 @Body() 데코레이션을 빼먹지 않았는지 꼭! 확인하자
+    createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Board> {
+        return this.boardService.createBoard(createBoardDto);
+    }
+
     @Get('/:id')
     getBoardById(@Param('id') id: number): Promise<Board> {
         return this.boardService.getBoardById(id);
