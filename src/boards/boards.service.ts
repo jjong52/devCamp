@@ -29,6 +29,10 @@ export class BoardsService {
     //     return board;
     // }
 
+    async getAllBoards(): Promise<Board[]> {
+        return this.boardRepository.find();
+    }
+    
     async createBoard(createBoardDto: CreateBoardDto) : Promise<Board> {
         const title = createBoardDto.title;
         const description = createBoardDto.description;
@@ -50,6 +54,14 @@ export class BoardsService {
         }
         return found;
     }
+
+    async deleteBoard(id: number): Promise<void> {
+        const result = await this.boardRepository.delete(id);
+        console.log(result); // DB에 존재하지 않는 보드면 DeleteResult { raw: [], affected: 0 }
+        if(result.affected == 0) {
+            throw new NotFoundException(`Can't find Board with id ${id}`);
+        }
+    }
     // deleteBoard(id: string): void {
     //     this.boards = this.boards.filter((board) => board.id !== id); 
     //     // array.filter(콜백함수) 콜백함수로 걸러낸 새로운 배열 생성 (java의 stream().filter().toArray()기능)
@@ -59,4 +71,11 @@ export class BoardsService {
     //     board.status = status;
     //     return board;
     // }
+
+    async updateBoardStatus(id: number, status: BoardStatus): Promise<Board> {
+        const board = await this.getBoardById(id);
+        board.status = status;
+        await this.boardRepository.save(board);
+        return board;
+    }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { BoardStatus } from './board-status.enum';
 import { CreateBoardDto } from './dto/create-board.dto';
@@ -21,6 +21,11 @@ export class BoardsController {
     // ): Board {
     //     return this.boardService.createBoard(createBoardDto);
     // }
+    @Get()
+    getAllBoard(): Promise<Board[]> {
+        return this.boardService.getAllBoards();
+    }
+
     @Post()
     @UsePipes(ValidationPipe) // 내장 파이프 CreateBoardDto에서 @IsNotEmpty() 유효성 검사
     //Cannot read properties of undefined~ 에러가 뜨면 꼭 @Body() 데코레이션을 빼먹지 않았는지 꼭! 확인하자
@@ -40,6 +45,11 @@ export class BoardsController {
     // deleteBoard(@Param('id') id: string): void {
     //     this.boardService.deleteBoard(id);
     // }
+
+    @Delete('/:id')
+    deleteBoard(@Param('id', ParseIntPipe) id: number): Promise<void> {
+        return this.boardService.deleteBoard(id);
+    }
     // @Patch('/:id/status')
     // updateBoardStatus(
     //     @Param('id') id: string, 
@@ -47,4 +57,11 @@ export class BoardsController {
     // ) {
     //     return this.boardService.updateBoardStatus(id, status);
     // }
+    @Patch('/:id/status')
+    updateBoardStatus(
+        @Param('id', ParseIntPipe) id: number,
+        @Body('status', BoardStatusValidationPipe) status: BoardStatus
+    ): Promise<Board> {
+        return this.boardService.updateBoardStatus(id, status);
+    }
  }
