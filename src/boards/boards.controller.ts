@@ -5,6 +5,8 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { BoardStatusValidationPipe } from './pipes/board-status-validation.pipe';
 import { Board } from './board.entity';
 import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from 'src/auth/get-user.decorator';
+import { User } from 'src/auth/user.entity';
 
 
 @Controller('boards')
@@ -31,14 +33,22 @@ export class BoardsController {
     @Post()
     @UsePipes(ValidationPipe) // 내장 파이프 CreateBoardDto에서 @IsNotEmpty() 유효성 검사
     //Cannot read properties of undefined~ 에러가 뜨면 꼭 @Body() 데코레이션을 빼먹지 않았는지 꼭! 확인하자
-    createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Board> {
-        return this.boardService.createBoard(createBoardDto);
+    createBoard(@Body() createBoardDto: CreateBoardDto,
+    @GetUser() user: User): Promise<Board> {
+        return this.boardService.createBoard(createBoardDto, user);
+    }
+
+    @Get('/my-boards')
+    getMyBoards(@GetUser() user: User): Promise<Board[]> {
+        return this.boardService.getMyBoards(user);
     }
 
     @Get('/:id')
     getBoardById(@Param('id') id: number): Promise<Board> {
         return this.boardService.getBoardById(id);
     }
+
+  
     // @Get('/:id')
     // getBoardById(@Param('id') id: string): Board { // 스프링의 @PathVariable
     //     return this.boardService.getBoardById(id);
@@ -48,9 +58,13 @@ export class BoardsController {
     //     this.boardService.deleteBoard(id);
     // }
 
+
+
     @Delete('/:id')
-    deleteBoard(@Param('id', ParseIntPipe) id: number): Promise<void> {
-        return this.boardService.deleteBoard(id);
+    deleteBoard(@Param('id', ParseIntPipe) id: number,
+    @GetUser() user:User
+    ): Promise<void> {
+        return this.boardService.deleteBoard(id, user);
     }
     // @Patch('/:id/status')
     // updateBoardStatus(
